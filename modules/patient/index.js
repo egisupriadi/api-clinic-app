@@ -7,7 +7,7 @@ exports.index = async (req, res) => {
     let { page, limit } = req.body
     let offset = 0
 
-    let sql = "SELECT * FROM tb_patient"
+    let sql = "SELECT *, TIMESTAMPDIFF(YEAR, dob, CURDATE()) AS age FROM tb_patient"
     if (page && limit) {
         sql += " LIMIT :limit OFFSET :offset"
         let { prev: prevPagging, next: nextPagging, max: maxPagging } = await pagging('tb_patient', page, limit);
@@ -33,7 +33,7 @@ exports.detail = (req, res) => {
     }
     const { id } = req.params
     const params = { id }
-    const sql = "SELECT * FROM tb_patient WHERE id = :id"
+    const sql = "SELECT *, TIMESTAMPDIFF(YEAR, dob, CURDATE()) AS age FROM tb_patient WHERE id = :id"
     db.query(sql, params, (error, [result]) => {
         if (error) {
             response(500, error.message, "Oops, Something Wrong...", res)

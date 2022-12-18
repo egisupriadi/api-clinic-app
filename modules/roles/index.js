@@ -1,14 +1,27 @@
-const { response, validation, uuid } = require('../../utils')
+const { response, validation, pagging } = require('../../utils')
 const db = require('../../config/database')
 
-exports.index = (req, res) => {
-    const sql = "SELECT * FROM tb_role"
-    db.query(sql, (error, result) => {
+exports.index = async (req, res) => {
+    let prev = null, next = null, max = null
+    let { page, limit } = req.body
+    let offset = 0
+
+    let sql = "SELECT * FROM tb_role"
+
+    if (page && limit) {
+        sql += " LIMIT :limit OFFSET :offset"
+        let { prev: prevPagging, next: nextPagging, max: maxPagging } = await pagging('tb_role', page, limit);
+        offset = limit * (page - 1)
+        prev = prevPagging
+        next = nextPagging
+        max = maxPagging
+    }
+    db.query(sql, { limit, offset }, (error, result) => {
         if (error) {
             response(500, error.message, 'Oops, Something Wrong...', res)
             return
         }
-        response(200, result, 'Get Data Successfuly', res)
+        response(200, result, 'Get Data Successfuly', res, prev, next, max)
     })
 }
 
@@ -87,12 +100,12 @@ exports.edit = (req, res) => {
 }
 
 exports.delete = (req, res) => {
-    const errors = validation(req.body, ['id'])
+    const errors = validation(req.params, ['id'])
     if (errors) {
         response(400, errors, "Invalid parameters", res)
         return
     }
-    const { id } = req.body
+    const { id } = req.params
     const params = { id }
     const sql = "DELETE FROM tb_role WHERE id = :id"
     db.query(sql, params, (error, result) => {

@@ -3,6 +3,7 @@ const { encrypt, decrypt } = require('./encryption')
 const validation = require('./validation')
 const uuid = require('./uuid')
 const { generateToken, verifyToken } = require('./token')
+const pagging = require('./pagging')
 
 module.exports = {
     response,
@@ -12,4 +13,5 @@ module.exports = {
     uuid,
     generateToken,
     verifyToken,
+    pagging,
 }

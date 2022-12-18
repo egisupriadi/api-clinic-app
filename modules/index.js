@@ -3,6 +3,7 @@ const { index: userIndex, detail: userDetail, add: userAdd, edit: userEdit, dele
 const { index: patientIndex, detail: patientDetail, add: patientAdd, edit: patientEdit, delete: patientDelete } = require('./patient')
 const { index: roleIndex, detail: roleDetail, add: roleAdd, edit: roleEdit, delete: roleDelete } = require('./roles')
 const { index: medicineIndex, detail: medicineDetail, add: medicineAdd, edit: medicineEdit, delete: medicineDelete } = require('./medicine')
+const { index: queueIndex, detail: queueDetail, add: queueAdd, edit: queueEdit, delete: queueDelete } = require('./queue')
 
 module.exports = {
     authLogin,
@@ -26,4 +27,9 @@ module.exports = {
     medicineAdd,
     medicineEdit,
     medicineDelete,
+    queueIndex,
+    queueDetail,
+    queueAdd,
+    queueEdit,
+    queueDelete,
 }

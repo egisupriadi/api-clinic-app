@@ -1,14 +1,28 @@
-const { response, validation, uuid } = require('../../utils')
+const { response, validation, uuid, pagging } = require('../../utils')
 const db = require('../../config/database')
+const moment = require('moment')
 
-exports.index = (req, res) => {
-    const sql = "SELECT * FROM tb_medicine"
-    db.query(sql, (error, result) => {
+exports.index = async (req, res) => {
+    let prev = null, next = null, max = null
+    let { page, limit } = req.body
+    let offset = 0
+
+    let sql = "SELECT * FROM tb_medicine"
+
+    if (page && limit) {
+        sql += " LIMIT :limit OFFSET :offset"
+        let { prev: prevPagging, next: nextPagging, max: maxPagging } = await pagging('tb_medicine', page, limit);
+        offset = limit * (page - 1)
+        prev = prevPagging
+        next = nextPagging
+        max = maxPagging
+    }
+    db.query(sql, { limit, offset }, (error, result) => {
         if (error) {
             response(500, error.message, 'Oops, Something Wrong...', res)
             return
         }
-        response(200, result, 'Get Data Successfuly', res)
+        response(200, result, 'Get Data Successfuly', res, prev, next, max)
     })
 }
 
@@ -35,13 +49,14 @@ exports.detail = (req, res) => {
 }
 
 exports.add = (req, res) => {
-    const errors = validation(req.body, ['name', 'category', 'price', 'stock', 'created_by', 'created_time'])
+    const errors = validation(req.body, ['name', 'category', 'price', 'stock'])
     if (errors) {
         response(400, errors, "Invalid Parameter", res)
         return
     }
-    const { name, category, price, stock, created_by, created_time } = req.body
-    const params = { id: uuid(), name, category, price, stock, created_by, created_time }
+    const { id: sessionId } = req.auth
+    const { name, category, price, stock } = req.body
+    const params = { id: uuid(), name, category, price, stock, created_time: moment().format('YYYY-MM-DD HH:mm:ss'), created_by: sessionId }
     const sql = `INSERT INTO tb_medicine(id, name, category, price, stock, created_by, created_time)
                 VALUES(:id, :name, :category, :price, :stock, :created_by, :created_time)`
     db.query(sql, params, (error, result) => {
@@ -93,12 +108,12 @@ exports.edit = (req, res) => {
 }
 
 exports.delete = (req, res) => {
-    const errors = validation(req.body, ['id'])
+    const errors = validation(req.params, ['id'])
     if (errors) {
         response(400, errors, "Invalid parameters", res)
         return
     }
-    const { id } = req.body
+    const { id } = req.params
     const params = { id }
     const sql = "DELETE FROM tb_medicine WHERE id = :id"
     db.query(sql, params, (error, result) => {

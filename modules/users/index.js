@@ -1,14 +1,28 @@
-const { response, encrypt, validation, uuid } = require('../../utils')
+const { response, encrypt, validation, uuid, pagging } = require('../../utils')
 const db = require('../../config/database')
+const moment = require('moment')
 
-exports.index = (req, res) => {
-    const sql = "SELECT * FROM tb_user"
-    db.query(sql, (error, result) => {
+exports.index = async (req, res) => {
+    let prev = null, next = null, max = null
+    let { page, limit } = req.body
+    let offset = 0
+
+    let sql = "SELECT *, TIMESTAMPDIFF(YEAR, dob, CURDATE()) AS age FROM tb_user"
+
+    if (page && limit) {
+        sql += " LIMIT :limit OFFSET :offset"
+        let { prev: prevPagging, next: nextPagging, max: maxPagging } = await pagging('tb_user', page, limit);
+        offset = limit * (page - 1)
+        prev = prevPagging
+        next = nextPagging
+        max = maxPagging
+    }
+    db.query(sql, { offset, limit }, (error, result) => {
         if (error) {
             response(500, error.message, "Oops, Something Wrong...", res)
             return
         }
-        response(200, result, 'Get Data Successfuly', res)
+        response(200, result, 'Get Data Successfuly', res, prev, next, max)
     })
 }
 
@@ -20,7 +34,7 @@ exports.detail = (req, res) => {
     }
     const { username } = req.params
     const params = { username }
-    const sql = `SELECT * FROM tb_user WHERE username = :username`
+    const sql = `SELECT *, TIMESTAMPDIFF(YEAR, dob, CURDATE()) AS age FROM tb_user WHERE username = :username`
     db.query(sql, params, (error, [result]) => {
         if (error) {
             response(500, error.message, "Oops, Something Wrong...", res)
@@ -35,13 +49,14 @@ exports.detail = (req, res) => {
 }
 
 exports.add = (req, res) => {
-    const errors = validation(req.body, ['username', 'password', 'nip', 'fullname', 'dob', 'address', 'phone', 'email', 'role', 'status', 'created_time', 'created_by'])
+    const errors = validation(req.body, ['username', 'password', 'nip', 'fullname', 'dob', 'address', 'phone', 'email', 'role', 'status'])
     if (errors) {
         response(400, errors, "Invalid parameters", res)
         return
     }
-    const { username, password, nip, fullname, dob, address, phone, email, role, status, created_time, created_by } = req.body
-    const params = { id: uuid(), username, password: encrypt(password), nip, fullname, dob, address, phone, email, role, status, created_time, created_by }
+    const { id: sessionId } = req.auth
+    const { username, password, nip, fullname, dob, address, phone, email, role, status } = req.body
+    const params = { id: uuid(), username, password: encrypt(password), nip, fullname, dob, address, phone, email, role, status, created_time: moment().format('YYYY-MM-DD HH:mm:ss'), created_by: sessionId }
     const sql = `INSERT INTO tb_user(id, username, password, nip, fullname, dob, address, phone, email, role, status, created_time, created_by) 
                     VALUES (:id, :username, :password, :nip, :fullname, :dob, :address, :phone, :email, :role, :status, :created_time, :created_by)`
     db.query(sql, params, (error, result) => {
@@ -98,14 +113,15 @@ exports.edit = (req, res) => {
 }
 
 exports.delete = (req, res) => {
-    const errors = validation(req.params, ['username'])
+    const errors = validation(req.params, ['id'])
     if (errors) {
         response(400, errors, "Invalid parameters", res)
         return
     }
-    const { username } = req.body
-    const sql = `DELETE FROM tb_user WHERE username = '${username}'`
-    db.query(sql, (error, result) => {
+    const { id } = req.params
+    const params = { id }
+    const sql = `DELETE FROM tb_user WHERE id = :id`
+    db.query(sql, params, (error, result) => {
         if (error) {
             response(500, error.message, "Oops, Something Wrong...", res)
             return

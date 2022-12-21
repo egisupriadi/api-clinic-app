@@ -1,4 +1,4 @@
-module.exports = (status_code, data, message, res, prev = "", next = "", max = "") => {
+module.exports = (status_code, data, message, res, prev = null, next = null, max = null) => {
     let response = {
         payload: {
             status_code,
@@ -6,7 +6,7 @@ module.exports = (status_code, data, message, res, prev = "", next = "", max = "
             message,
         }
     }
-    if (prev || next || max) {
+    if (prev === null || next === null || max === null) {
         response = {
             ...response, ...{
                 pagination: {

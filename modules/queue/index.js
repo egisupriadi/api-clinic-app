@@ -18,19 +18,28 @@ const cntQueue = (date) => {
 
 exports.index = async (req, res) => {
     let prev = null, next = null, max = null
-    let { page, limit } = req.body
+    let { page, limit, search } = req.query
     let offset = 0
+    let condition = ''
 
     let sql = "SELECT * FROM tb_queue"
+    if (search) {
+        search = `%${search}%`
+        let col = ['id_patient', 'register_date', 'queue_number']
+        condition = ` WHERE ${col.map((item,) => `${item} LIKE :search`).join(' OR ')}`
+        sql += condition
+    }
     if (page && limit) {
+        page = parseInt(page)
+        limit = parseInt(limit)
         sql += " LIMIT :limit OFFSET :offset"
-        let { prev: prevPagging, next: nextPagging, max: maxPagging } = await pagging('tb_queue', page, limit);
+        let { prev: prevPagging, next: nextPagging, max: maxPagging } = await pagging('tb_queue', page, limit, condition, search);
         offset = limit * (page - 1)
         prev = prevPagging
         next = nextPagging
         max = maxPagging
     }
-    db.query(sql, { limit, offset }, (error, result) => {
+    db.query(sql, { limit, offset, search }, (error, result) => {
         if (error) {
             response(500, error.message, 'Oops, Something Wrong...', res)
             return

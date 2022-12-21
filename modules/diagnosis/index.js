@@ -23,7 +23,7 @@ const addPrescription = (id_diagnosis, id_medicine) => {
     return new Promise((resolve, reject) => {
         const params = { id_diagnosis, id_medicine }
         const sql = `INSERT INTO tb_prescription(id_medicine, id_diagnosis)
-        VALUES(::id_medicine, :id_diagnosis)`
+        VALUES(:id_medicine, :id_diagnosis)`
         db.query(sql, params, (error, result) => {
             if (error) {
                 reject(error)
@@ -57,7 +57,7 @@ const editPrescription = (id_diagnosis, id_medicine) => {
     return new Promise(async (resolve, reject) => {
         try {
             await deletePrescription(id_diagnosis)
-            await addPrescription(id_diagnosis)
+            await addPrescription(id_diagnosis, id_medicine)
             resolve(true)
         } catch (error) {
             reject(error)
@@ -66,20 +66,29 @@ const editPrescription = (id_diagnosis, id_medicine) => {
 }
 exports.index = async (req, res) => {
     let prev = null, next = null, max = null
-    let { page, limit } = req.body
+    let { page, limit, search } = req.query
     let offset = 0
+    let condition = ''
 
     let sql = "SELECT * FROM tb_diagnosis"
 
+    if (search) {
+        search = `%${search}%`
+        let col = ['id_patient', 'id_doctor', 'id_pharmacist', 'detail_diagnosis', 'rest_time', 'medicine', 'created_time']
+        condition = ` WHERE ${col.map((item,) => `${item} LIKE :search`).join(' OR ')}`
+        sql += condition
+    }
     if (page && limit) {
+        page = parseInt(page)
+        limit = parseInt(limit)
         sql += " LIMIT :limit OFFSET :offset"
-        let { prev: prevPagging, next: nextPagging, max: maxPagging } = await pagging('tb_diagnosis', page, limit);
+        let { prev: prevPagging, next: nextPagging, max: maxPagging } = await pagging('tb_diagnosis', page, limit, condition, search);
         offset = limit * (page - 1)
         prev = prevPagging
         next = nextPagging
         max = maxPagging
     }
-    db.query(sql, { limit, offset }, (error, result) => {
+    db.query(sql, { limit, offset, search }, (error, result) => {
         if (error) {
             response(500, error.message, 'Oops, Something Wrong...', res)
             return
@@ -117,18 +126,19 @@ exports.detail = (req, res) => {
 }
 
 exports.add = (req, res) => {
-    const errors = validation(req.body, ['id_patient', 'id_doctor', 'id_pharmacist', 'detail_diagnosis', 'rest_time', 'medicine'])
+    const errors = validation(req.body, ['id_patient', 'id_doctor', 'detail_diagnosis', 'medicine'])
     if (errors) {
         response(400, errors, "Invalid Parameter", res)
         return
     }
     const { id: sessionId } = req.auth
     const { id_patient, id_doctor, id_pharmacist, detail_diagnosis, rest_time, medicine } = req.body
-    const params = { id: uuid(), id_patient, id_doctor, id_pharmacist, detail_diagnosis, rest_time, created_time: moment().format('YYYY-MM-DD HH:mm:ss'), created_by: sessionId }
-    const sql = `INSERT INTO tb_diagnosis(id, id_patient, id_doctor, id_pharmacist, detail_diagnosis, rest_time, created_time)
+    const params = { id: uuid(), id_patient, id_doctor, id_pharmacist: id_pharmacist || '', detail_diagnosis, rest_time: rest_time || '', created_time: moment().format('YYYY-MM-DD HH:mm:ss'), created_by: sessionId }
+    const sql = `INSERT INTO tb_diagnosis(id, id_patient, id_doctor, id_pharmacist, detail_diagnosis, rest_time, created_time, created_by)
                 VALUES(:id, :id_patient, :id_doctor, :id_pharmacist, :detail_diagnosis, :rest_time, :created_by, :created_time)`
     db.query(sql, params, async (error, result) => {
         if (error) {
+            console.log("ini bukan")
             response(500, error.message, "Oops, Something Wrong...", res)
             return
         }
@@ -146,12 +156,12 @@ exports.add = (req, res) => {
 }
 
 exports.edit = (req, res) => {
-    const errors = validation(req.body, ['id', 'id_patient', 'id_doctor', 'id_pharmacist', 'detail_diagnosis', 'rest_time'])
+    const errors = validation(req.body, ['id', 'id_patient', 'id_doctor', 'detail_diagnosis', 'medicine'])
     if (errors) {
         response(400, errors, "Invalid parameters", res)
         return
     }
-    const { id, id_patient, id_doctor, id_pharmacist, detail_diagnosis, rest_time } = req.body;
+    const { id, id_patient, id_doctor, id_pharmacist, detail_diagnosis, rest_time, medicine } = req.body;
     const params = { id, id_patient, id_doctor, id_pharmacist, detail_diagnosis, rest_time }
     const sql = `UPDATE tb_diagnosis SET 
             id_patient:id_patient, 

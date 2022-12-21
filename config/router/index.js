@@ -25,6 +25,12 @@ const {
     queueAdd,
     queueEdit,
     queueDelete,
+    diagnosisIndex,
+    diagnosisDetail,
+    diagnosisAdd,
+    diagnosisEdit,
+    diagnosisDelete,
+    diagnosisGetByPatient,
 } = require('../../modules')
 
 const { authorization } = require('../../middleware')
@@ -62,5 +68,12 @@ module.exports = (app) => {
     app.post('/queue/add', authorization(), queueAdd)
     app.put('/queue/edit', authorization(), queueEdit)
     app.delete('/queue/delete/:id', authorization(), queueDelete)
+
+    app.get('/diagnosis', authorization(), diagnosisIndex)
+    app.get('/diagnosis/:id', authorization(), diagnosisDetail)
+    app.post('/diagnosis/add', authorization(), diagnosisAdd)
+    app.put('/diagnosis/edit', authorization(), diagnosisEdit)
+    app.delete('/diagnosis/delete/:id', authorization(), diagnosisDelete)
+    app.get('/diagnosis/getByPatient/:id_patient', authorization(), diagnosisGetByPatient)
 
 }

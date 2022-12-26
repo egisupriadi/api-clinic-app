@@ -22,7 +22,7 @@ exports.index = async (req, res) => {
     let offset = 0
     let condition = ''
 
-    let sql = "SELECT * FROM tb_queue"
+    let sql = "SELECT a.*, b.name, b.dob, b.address, b.phone, TIMESTAMPDIFF(YEAR, b.dob, CURDATE()) AS age FROM tb_queue AS a JOIN tb_patient AS b ON a.id_patient=b.id"
     if (search) {
         search = `%${search}%`
         let col = ['id_patient', 'register_date', 'queue_number']

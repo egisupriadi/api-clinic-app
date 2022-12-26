@@ -4,18 +4,15 @@ const moment = require('moment')
 
 const selectPrescription = (id_diagnosis) => {
     return new Promise((resolve, reject) => {
-        const params = { id_diagnosis, id_medicine }
-        const sql = `SELECT a.*, b.name, b.category, b.price FROM tb_prescription a JOIN tb_medicine b ON a.id_medicine = b.id)`
+        const params = { id_diagnosis }
+
+        const sql = `SELECT a.*, b.name, b.category, b.price FROM tb_prescription a JOIN tb_medicine b ON a.id_medicine = b.id WHERE a.id_diagnosis=:id_diagnosis`
         db.query(sql, params, (error, result) => {
             if (error) {
                 reject(error)
                 return
             }
-            const data = {
-                isSuccess: result.affectedRows,
-                id: params.id
-            }
-            resolve(data)
+            resolve(result)
         })
     })
 }
@@ -93,8 +90,9 @@ exports.index = async (req, res) => {
             response(500, error.message, 'Oops, Something Wrong...', res)
             return
         }
-        Promise.all(result.map(item => selectPrescription(item.id_diagnosis)))
+        Promise.all(result.map(item => selectPrescription(item.id)))
             .then(resDiagnosis => {
+                console.log(resDiagnosis)
                 result = result.map((item, key) => ({ ...item, ...{ medicine: resDiagnosis[key] } }))
                 response(200, result, 'Get Data Successfuly', res, prev, next, max)
 
@@ -135,7 +133,7 @@ exports.add = (req, res) => {
     const { id_patient, id_doctor, id_pharmacist, detail_diagnosis, rest_time, medicine } = req.body
     const params = { id: uuid(), id_patient, id_doctor, id_pharmacist: id_pharmacist || '', detail_diagnosis, rest_time: rest_time || '', created_time: moment().format('YYYY-MM-DD HH:mm:ss'), created_by: sessionId }
     const sql = `INSERT INTO tb_diagnosis(id, id_patient, id_doctor, id_pharmacist, detail_diagnosis, rest_time, created_time, created_by)
-                VALUES(:id, :id_patient, :id_doctor, :id_pharmacist, :detail_diagnosis, :rest_time, :created_by, :created_time)`
+                VALUES(:id, :id_patient, :id_doctor, :id_pharmacist, :detail_diagnosis, :rest_time, :created_time, :created_by)`
     db.query(sql, params, async (error, result) => {
         if (error) {
             console.log("ini bukan")

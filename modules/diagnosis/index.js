@@ -106,7 +106,7 @@ exports.detail = (req, res) => {
     }
     const { id } = req.params
     const params = { id }
-    const sql = "SELECT * FROM tb_diagnosis WHERE id = :id"
+    const sql = "SELECT a.*, b.name AS patient_name, c.fullname AS doctor_name, d.fullname AS pharmacist_name FROM tb_diagnosis AS a LEFT JOIN tb_patient AS b on a.id_patient=b.id LEFT JOIN tb_user AS c on a.id_doctor=c.id LEFT JOIN tb_user AS d on a.id_pharmacist=c.id WHERE a.id = :id"
     db.query(sql, params, async (error, [result]) => {
         if (error) {
             response(500, error.message, "Oops, Something Wrong...", res)

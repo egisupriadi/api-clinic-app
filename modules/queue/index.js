@@ -56,7 +56,7 @@ exports.detail = (req, res) => {
     }
     const { id } = req.params
     const params = { id }
-    const sql = "SELECT * FROM tb_queue WHERE id = :id"
+    const sql = "SELECT a.*, b.name, b.dob, b.address, b.phone, TIMESTAMPDIFF(YEAR, b.dob, CURDATE()) AS age FROM tb_queue AS a JOIN tb_patient AS b ON a.id_patient=b.id WHERE a.id = :id"
     db.query(sql, params, (error, [result]) => {
         if (error) {
             response(500, error.message, "Oops, Something Wrong...", res)

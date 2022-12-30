@@ -25,6 +25,7 @@ const {
     queueAdd,
     queueEdit,
     queueDelete,
+    queueDataWeek,
     diagnosisIndex,
     diagnosisDetail,
     diagnosisAdd,
@@ -39,11 +40,11 @@ module.exports = (app) => {
     app.get('/', (req, res) => res.send("OK"))
     app.post('/auth/login', authLogin)
 
-    app.get('/user', authorization(['1']), userIndex)
+    app.get('/user', authorization(), userIndex)
     app.get('/user/:username', authorization(), userDetail)
-    app.post('/user/add', authorization(['1']), userAdd)
-    app.put('/user/edit', authorization(['1']), userEdit)
-    app.delete('/user/delete/:id', authorization(['1']), userDelete)
+    app.post('/user/add', authorization(), userAdd)
+    app.put('/user/edit', authorization(), userEdit)
+    app.delete('/user/delete/:id', authorization(), userDelete)
 
     app.get('/patient', authorization(), patientIndex)
     app.get('/patient/:id', authorization(), patientDetail)
@@ -64,6 +65,7 @@ module.exports = (app) => {
     app.delete('/medicine/delete/:id', authorization(), medicineDelete)
 
     app.get('/queue', authorization(), queueIndex)
+    app.get('/queue/data', authorization(), queueDataWeek)
     app.get('/queue/:id', authorization(), queueDetail)
     app.post('/queue/add', authorization(), queueAdd)
     app.put('/queue/edit', authorization(), queueEdit)

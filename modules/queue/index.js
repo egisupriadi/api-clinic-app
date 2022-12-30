@@ -153,3 +153,18 @@ exports.delete = (req, res) => {
     })
 }
 
+exports.dataWeek = (req, res) => {
+    let start_week = moment().startOf('week').format('YYYY-MM-DD');
+    let end_week = moment().endOf('week').format('YYYY-MM-DD');
+    let arr_data = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((item, key) => ({ day: item, date: moment(start_week).add(key + 1, 'days').toDate(), cnt: 0 }))
+    let params = { start_week, end_week }
+    const sql = `SELECT DATE(register_date) AS register_date, COUNT(register_date) AS cnt FROM tb_queue WHERE register_date >= :start_week AND register_date <= :end_week GROUP BY DATE(register_date)`
+    db.query(sql, params, (error, result) => {
+        if (error) {
+            response(500, error.message, "Oops, Something Wrong...", res)
+            return
+        }
+        result.map(item => arr_data[moment(item.register_date).diff(start_week, 'days')].cnt = item.cnt)
+        response(200, arr_data, 'Get Data Successfuly', res)
+    })
+}

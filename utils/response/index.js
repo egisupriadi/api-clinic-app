@@ -6,7 +6,7 @@ module.exports = (status_code, data, message, res, prev = null, next = null, max
             message,
         }
     }
-    if (prev === null || next === null || max === null) {
+    if (prev !== null || next !== null || max !== null) {
         response = {
             ...response, ...{
                 pagination: {

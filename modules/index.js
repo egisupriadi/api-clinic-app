@@ -3,7 +3,7 @@ const { index: userIndex, detail: userDetail, add: userAdd, edit: userEdit, dele
 const { index: patientIndex, detail: patientDetail, add: patientAdd, edit: patientEdit, delete: patientDelete } = require('./patient')
 const { index: roleIndex, detail: roleDetail, add: roleAdd, edit: roleEdit, delete: roleDelete } = require('./roles')
 const { index: medicineIndex, detail: medicineDetail, add: medicineAdd, edit: medicineEdit, delete: medicineDelete } = require('./medicine')
-const { index: queueIndex, detail: queueDetail, add: queueAdd, edit: queueEdit, delete: queueDelete } = require('./queue')
+const { index: queueIndex, detail: queueDetail, add: queueAdd, edit: queueEdit, delete: queueDelete, dataWeek: queueDataWeek } = require('./queue')
 const { index: diagnosisIndex, detail: diagnosisDetail, add: diagnosisAdd, edit: diagnosisEdit, delete: diagnosisDelete, getByPatient: diagnosisGetByPatient } = require('./diagnosis')
 
 module.exports = {
@@ -33,6 +33,7 @@ module.exports = {
     queueAdd,
     queueEdit,
     queueDelete,
+    queueDataWeek,
     diagnosisIndex,
     diagnosisDetail,
     diagnosisAdd,

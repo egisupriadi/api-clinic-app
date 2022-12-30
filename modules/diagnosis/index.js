@@ -66,8 +66,7 @@ exports.index = async (req, res) => {
     let { page, limit, search } = req.query
     let offset = 0
     let condition = ''
-
-    let sql = "SELECT * FROM tb_diagnosis"
+    let sql = "SELECT a.*, b.name AS patient_name, c.fullname AS doctor_name, d.fullname AS pharmacist_name FROM tb_diagnosis AS a LEFT JOIN tb_patient AS b on a.id_patient=b.id LEFT JOIN tb_user AS c on a.id_doctor=c.id LEFT JOIN tb_user AS d on a.id_pharmacist=c.id"
 
     if (search) {
         search = `%${search}%`
@@ -92,7 +91,6 @@ exports.index = async (req, res) => {
         }
         Promise.all(result.map(item => selectPrescription(item.id)))
             .then(resDiagnosis => {
-                console.log(resDiagnosis)
                 result = result.map((item, key) => ({ ...item, ...{ medicine: resDiagnosis[key] } }))
                 response(200, result, 'Get Data Successfuly', res, prev, next, max)
 
@@ -136,7 +134,6 @@ exports.add = (req, res) => {
                 VALUES(:id, :id_patient, :id_doctor, :id_pharmacist, :detail_diagnosis, :rest_time, :created_time, :created_by)`
     db.query(sql, params, async (error, result) => {
         if (error) {
-            console.log("ini bukan")
             response(500, error.message, "Oops, Something Wrong...", res)
             return
         }

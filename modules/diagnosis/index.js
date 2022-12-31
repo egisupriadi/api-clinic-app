@@ -129,9 +129,9 @@ exports.add = (req, res) => {
     }
     const { id: sessionId } = req.auth
     const { id_patient, id_doctor, id_pharmacist, detail_diagnosis, rest_time, complaint, medicine } = req.body
-    const params = { id: uuid(), id_patient, id_doctor, id_pharmacist: id_pharmacist || '', detail_diagnosis, rest_time: rest_time || '', complaint, created_time: moment().format('YYYY-MM-DD HH:mm:ss'), created_by: sessionId }
-    const sql = `INSERT INTO tb_diagnosis(id, id_patient, id_doctor, id_pharmacist, detail_diagnosis, rest_time, complaint, created_time, created_by)
-                VALUES(:id, :id_patient, :id_doctor, :id_pharmacist, :detail_diagnosis, :rest_time, :complaint, :created_time, :created_by)`
+    const params = { id: uuid(), id_patient, id_doctor, id_pharmacist: id_pharmacist || '', detail_diagnosis, rest_time: rest_time || '', complaint, status: 'Periksa', created_time: moment().format('YYYY-MM-DD HH:mm:ss'), created_by: sessionId }
+    const sql = `INSERT INTO tb_diagnosis(id, id_patient, id_doctor, id_pharmacist, detail_diagnosis, rest_time, complaint, status, created_time, created_by)
+                VALUES(:id, :id_patient, :id_doctor, :id_pharmacist, :detail_diagnosis, :rest_time, :complaint, :status, :created_time, :created_by)`
     db.query(sql, params, async (error, result) => {
         if (error) {
             response(500, error.message, "Oops, Something Wrong...", res)
@@ -151,20 +151,21 @@ exports.add = (req, res) => {
 }
 
 exports.edit = (req, res) => {
-    const errors = validation(req.body, ['id', 'id_patient', 'id_doctor', 'detail_diagnosis', 'complaint', 'medicine'])
+    const errors = validation(req.body, ['id', 'id_patient', 'id_doctor', 'detail_diagnosis', 'complaint', 'status', 'medicine'])
     if (errors) {
         response(400, errors, "Invalid parameters", res)
         return
     }
-    const { id, id_patient, id_doctor, id_pharmacist, detail_diagnosis, rest_time, complaint, medicine } = req.body;
-    const params = { id, id_patient, id_doctor, id_pharmacist, detail_diagnosis, rest_time, complaint }
+    const { id, id_patient, id_doctor, id_pharmacist, detail_diagnosis, rest_time, complaint, status, medicine } = req.body;
+    const params = { id, id_patient, id_doctor, id_pharmacist, detail_diagnosis, rest_time, complaint, status }
     const sql = `UPDATE tb_diagnosis SET 
             id_patient=:id_patient, 
             id_doctor=:id_doctor, 
             id_pharmacist=:id_pharmacist, 
             detail_diagnosis=:detail_diagnosis, 
             rest_time=:rest_time,
-            complaint=:complaint
+            complaint=:complaint,
+            status=:status
         WHERE id = :id`
     db.query(sql, params, async (error, result) => {
         if (error) {

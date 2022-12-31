@@ -57,16 +57,16 @@ exports.detail = (req, res) => {
 }
 
 exports.add = (req, res) => {
-    const errors = validation(req.body, ['name', 'dob', 'address'])
+    const errors = validation(req.body, ['name', 'dob', 'address', 'gender'])
     if (errors) {
         response(400, errors, "Invalid Parameter", res)
         return
     }
     const { id: sessionId } = req.auth
-    const { name, dob, address, phone } = req.body
-    const params = { id: uuid(), name, dob, address, phone, created_time: moment().format('YYYY-MM-DD HH:mm:ss'), created_by: sessionId }
-    const sql = `INSERT INTO tb_patient(id, name, dob, address, phone, created_by, created_time)
-                VALUES(:id, :name, :dob, :address, :phone, :created_by, :created_time)`
+    const { name, dob, address, phone, gender } = req.body
+    const params = { id: uuid(), name, dob, address, phone, gender, created_time: moment().format('YYYY-MM-DD HH:mm:ss'), created_by: sessionId }
+    const sql = `INSERT INTO tb_patient(id, name, dob, address, phone, gender, created_by, created_time)
+                VALUES(:id, :name, :dob, :address, :phone, :gender, :created_by, :created_time)`
     db.query(sql, params, (error, result) => {
         if (error) {
             response(500, error.message, "Oops, Something Wrong...", res)
@@ -85,18 +85,19 @@ exports.add = (req, res) => {
 }
 
 exports.edit = (req, res) => {
-    const errors = validation(req.body, ['id', 'name', 'dob', 'address'])
+    const errors = validation(req.body, ['id', 'name', 'dob', 'address', 'gender'])
     if (errors) {
         response(400, errors, "Invalid parameters", res)
         return
     }
-    const { id, name, dob, address, phone } = req.body;
-    const params = { id, name, dob, address, phone }
+    const { id, name, dob, address, phone, gender } = req.body;
+    const params = { id, name, dob, address, phone, gender }
     const sql = `UPDATE tb_patient SET 
             name = :name, 
             dob = :dob, 
             address = :address, 
-            phone = :phone
+            phone = :phone,
+            gender = :gender
         WHERE id = :id`
     db.query(sql, params, (error, result) => {
         if (error) {

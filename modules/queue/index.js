@@ -22,7 +22,7 @@ exports.index = async (req, res) => {
     let offset = 0
     let condition = ''
 
-    let sql = "SELECT a.*, b.name, b.dob, b.address, b.phone, TIMESTAMPDIFF(YEAR, b.dob, CURDATE()) AS age FROM tb_queue AS a JOIN tb_patient AS b ON a.id_patient=b.id"
+    let sql = "SELECT a.*, b.name, b.dob, b.address, b.phone, b.gender, TIMESTAMPDIFF(YEAR, b.dob, CURDATE()) AS age FROM tb_queue AS a JOIN tb_patient AS b ON a.id_patient=b.id"
     if (search) {
         search = `%${search}%`
         let col = ['id_patient', 'register_date', 'queue_number']
@@ -56,7 +56,7 @@ exports.detail = (req, res) => {
     }
     const { id } = req.params
     const params = { id }
-    const sql = "SELECT a.*, b.name, b.dob, b.address, b.phone, TIMESTAMPDIFF(YEAR, b.dob, CURDATE()) AS age FROM tb_queue AS a JOIN tb_patient AS b ON a.id_patient=b.id WHERE a.id = :id"
+    const sql = "SELECT a.*, b.name, b.dob, b.address, b.phone, b.gender, TIMESTAMPDIFF(YEAR, b.dob, CURDATE()) AS age FROM tb_queue AS a JOIN tb_patient AS b ON a.id_patient=b.id WHERE a.id = :id"
     db.query(sql, params, (error, [result]) => {
         if (error) {
             response(500, error.message, "Oops, Something Wrong...", res)

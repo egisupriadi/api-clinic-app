@@ -159,12 +159,12 @@ exports.edit = (req, res) => {
     const { id, id_patient, id_doctor, id_pharmacist, detail_diagnosis, rest_time, complaint, medicine } = req.body;
     const params = { id, id_patient, id_doctor, id_pharmacist, detail_diagnosis, rest_time, complaint }
     const sql = `UPDATE tb_diagnosis SET 
-            id_patient:id_patient, 
-            id_doctor:id_doctor, 
-            id_pharmacist:id_pharmacist, 
-            detail_diagnosis:detail_diagnosis, 
-            rest_time:rest_time,
-            complaint:complaint
+            id_patient=:id_patient, 
+            id_doctor=:id_doctor, 
+            id_pharmacist=:id_pharmacist, 
+            detail_diagnosis=:detail_diagnosis, 
+            rest_time=:rest_time,
+            complaint=:complaint
         WHERE id = :id`
     db.query(sql, params, async (error, result) => {
         if (error) {
